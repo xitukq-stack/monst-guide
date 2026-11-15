@@ -1,235 +1,326 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>モンスト軌道ガイド</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1425">
+<title>MONST GUIDE｜モンスト軌道ガイド</title>
 <style>
+:root{
+  --bg:#091322;--panel:#111f33;--panel2:#172941;--line:#29425e;
+  --text:#f4f7ff;--muted:#9eafc6;--mint:#56e4cf;--purple:#b89aff;
+  --radius:17px;
+}
 *{box-sizing:border-box}
-body{margin:0;padding:15px;background:#11131c;color:white;font-family:-apple-system,sans-serif}
-h1{text-align:center;color:#d6b5ff;font-size:23px}
-.panel{background:#202536;padding:14px;border-radius:14px;margin:12px 0}
-button,.file-button{background:#8056c9;color:white;border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:bold}
+html{background:var(--bg)}
+body{
+  margin:0;padding:calc(10px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom));
+  color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:radial-gradient(ellipse at 50% -20%,#1c3150 0%,var(--bg) 55%);
+}
+.app{width:min(100%,760px);margin:0 auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px}
+.brand{min-width:0}
+.brand h1{font-size:clamp(18px,5vw,23px);line-height:1.1;margin:0 0 5px;font-weight:900;letter-spacing:.02em}
+.brand p{margin:0;color:var(--muted);font-size:10px;white-space:nowrap}
+.top-actions{display:flex;gap:7px;flex-shrink:0}
+button,.file-label{
+  border:1px solid var(--line);border-radius:12px;background:#172941;color:var(--text);
+  min-height:44px;padding:10px 12px;font-size:13px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  -webkit-tap-highlight-color:transparent;cursor:pointer;
+}
+button:active,.file-label:active{transform:scale(.98);filter:brightness(1.15)}
+button.primary,.file-label.primary{background:linear-gradient(135deg,#55e5d0,#35bfae);color:#08252a;border:0}
+button.active{background:#1c554f;border-color:var(--mint);color:var(--mint)}
+button:disabled{opacity:.4}
 input[type=file]{display:none}
-input[type=range]{width:100%;accent-color:#bd91ff}
-input[type=color]{width:48px;height:38px}
-.row{display:flex;align-items:center;gap:10px;margin:12px 0}
-.row>*{flex:1}
-.value{color:#d5b7ff;text-align:right}
-#stage{width:100%;height:auto;display:block;border-radius:12px;background:#090b12;touch-action:manipulation}
-.small{font-size:12px;color:#b7bfd0;line-height:1.6}
+.stage-shell{
+  background:#050b14;border:1px solid #31465e;border-radius:15px;padding:5px;
+  box-shadow:0 8px 25px #0007;display:flex;justify-content:center;align-items:center;
+  min-height:210px;overflow:hidden;
+}
+#stage{
+  display:block;width:auto;height:auto;max-width:100%;max-height:62svh;
+  border-radius:9px;touch-action:pan-y;image-rendering:auto;
+}
+.status{
+  margin:8px 2px 10px;padding:9px 12px;border:1px solid #263d56;border-radius:12px;
+  background:#101d30;color:#c8d6e9;font-size:11px;line-height:1.5;
+}
+.modebar{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}
+.modebar button{min-height:50px;font-size:13px;background:#14243a}
+.modebar button.selected{background:linear-gradient(135deg,#5ce6d1,#3abcae);color:#08252a;border:0}
+.panel{
+  background:linear-gradient(180deg,#14243a,#101d30);border:1px solid #263e58;
+  border-radius:var(--radius);padding:12px;margin:10px 0;
+}
+.panel-title{font-size:12px;color:#c3d2e6;font-weight:800;margin:0 0 10px}
+.coord-row{display:grid;grid-template-columns:20px 1fr 20px 1fr;align-items:center;gap:7px}
+.coord-row label{font-size:12px;color:var(--muted);font-weight:800}
+input[type=number]{
+  width:100%;min-width:0;height:43px;border:1px solid #314963;border-radius:11px;
+  background:#0b1728;color:white;text-align:center;font-size:17px;font-weight:800;
+  outline:none;
+}
+.slider-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 5px;font-size:13px}
+.value{color:var(--mint);font-weight:900;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--mint);margin:5px 0 1px}
+.angle-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.angle-actions button{min-height:40px}
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.tools button{font-size:11px;min-height:42px;padding:8px 5px}
+.color-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px;color:var(--muted)}
+input[type=color]{width:48px;height:34px;padding:2px;border:1px solid #314963;border-radius:8px;background:#0b1728}
+.note{font-size:10px;color:var(--muted);line-height:1.5;margin:8px 2px 0}
+.full{width:100%}
+@media(min-width:600px){
+  body{padding-left:20px;padding-right:20px}
+  #stage{max-height:68svh}
+  .panel{padding:15px}
+}
 </style>
 </head>
 <body>
-<h1>🎯 モンスト軌道ガイド</h1>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1>モンスト軌道ガイド</h1>
+      <p>指の少し上から発射点・角度・ブロックを調整</p>
+    </div>
+    <div class="top-actions">
+      <button id="fitButton" type="button">全体表示</button>
+      <label class="file-label primary" for="photo">＋ 画像</label>
+      <input id="photo" type="file" accept="image/*">
+    </div>
+  </header>
 
-<div class="panel">
-<label class="file-button" for="photo">📷 スクショを読み込む</label>
-<input id="photo" type="file" accept="image/*">
-<p class="small">写真アプリからスクショを選択してね。</p>
-</div>
+  <div class="stage-shell">
+    <canvas id="stage" width="900" height="600"></canvas>
+  </div>
+  <div class="status" id="message">● 発射点モード：ステージをタップして発射位置を設定</div>
 
-<canvas id="stage" width="900" height="600"></canvas>
+  <div class="modebar">
+    <button id="originMode" class="selected" type="button">◎ 発射点</button>
+    <button id="angleMode" type="button">↗ 角度</button>
+    <button id="blockMode" type="button">▧ ブロック</button>
+  </div>
 
-<div class="panel">
-<div class="row">
-<span>角度</span>
-<span class="value" id="angleValue">45.00°</span>
-</div>
-<input id="angle" type="range" min="0" max="359.8" step="0.35" value="45">
+  <section class="panel">
+    <div class="coord-row">
+      <label for="posX">X</label><input id="posX" type="number" inputmode="numeric" value="450">
+      <label for="posY">Y</label><input id="posY" type="number" inputmode="numeric" value="480">
+    </div>
+    <p class="note" id="coordNote">ステージをタップすると発射点を移動できます。</p>
 
-<div class="row">
-<button id="minus">− 0.35°</button>
-<button id="plus">＋ 0.35°</button>
-</div>
+    <div class="slider-head"><span>角度</span><span class="value" id="angleValue">45.00°</span></div>
+    <input id="angle" type="range" min="0" max="359.8" step="0.05" value="45">
+    <div class="angle-actions">
+      <button id="minus" type="button">− 0.35°</button>
+      <button id="plus" type="button">＋ 0.35°</button>
+    </div>
 
-<div class="row">
-<span>バウンド回数</span>
-<span class="value" id="bounceValue">3回</span>
-</div>
-<input id="bounce" type="range" min="0" max="20" value="3">
+    <div class="slider-head"><span>反射回数</span><span class="value" id="bounceValue">6回</span></div>
+    <input id="bounce" type="range" min="0" max="20" value="6">
+  </section>
 
-<div class="row">
-<span>軌道線の色</span>
-<input id="lineColor" type="color" value="#00ffcc">
-</div>
-</div>
-
-<div class="panel">
-<div class="row">
-<button id="originMode">発射位置を変更</button>
-<button id="blockMode">ブロック配置 ON/OFF</button>
-</div>
-<p class="small" id="message">画面をタップして発射位置を設定できるよ。</p>
-<button id="clearBlocks">ブロックを全消去</button>
-<button id="saveImage">画像を保存</button>
-</div>
-
-<script>
+  <section class="panel">
+    <div class="tools">
+      <button id="widthButton" class="active" type="button">幅 ON</button>
+      <button id="undoBlock" type="button">配置取消</button>
+      <button id="saveLayout" type="button">配置保存</button>
+      <button id="wallButton" class="active" type="button">壁線 ON</button>
+      <button id="clearBlocks" type="button">全消去</button>
+      <button id="saveImage" type="button">画像保存</button>
+    </div>
+    <div class="color-row">
+      <span>軌道線の色</span><input id="lineColor" type="color" value="#00e7ce">
+    </div>
+    <p class="note">ブロックモード中にステージをタップして配置。配置保存で現在の発射点・ブロック・角度を端末に保存します。</p>
+  </section>
+</div><script>
 const canvas=document.getElementById("stage");
 const ctx=canvas.getContext("2d");
 const photo=document.getElementById("photo");
 const angle=document.getElementById("angle");
 const bounce=document.getElementById("bounce");
 const color=document.getElementById("lineColor");
+const message=document.getElementById("message");
+const posX=document.getElementById("posX");
+const posY=document.getElementById("posY");
 const angleValue=document.getElementById("angleValue");
 const bounceValue=document.getElementById("bounceValue");
-const message=document.getElementById("message");
 
 let image=null;
-let origin={x:180,y:300};
+let origin={x:450,y:480};
 let blocks=[];
-let blockMode=false;
-let originMode=true;
-function draw(){
- const w=canvas.width,h=canvas.height;
- ctx.clearRect(0,0,w,h);
- ctx.fillStyle="#171c28";
- ctx.fillRect(0,0,w,h);
+let mode="origin";
+let wideLine=true;
+let wallLine=true;
+let fitLarge=false;
 
- if(image){
-  const scale=Math.min(w/image.width,h/image.height);
-  const iw=image.width*scale,ih=image.height*scale;
-  ctx.drawImage(image,(w-iw)/2,(h-ih)/2,iw,ih);
- }else{
-  ctx.fillStyle="#aaa";
-  ctx.font="28px sans-serif";
-  ctx.textAlign="center";
-  ctx.fillText("スクショを読み込んでね",w/2,h/2);
- }
-
- blocks.forEach(b=>{
-  ctx.fillStyle="rgba(255,70,100,.55)";
-  ctx.fillRect(b.x-22,b.y-22,44,44);
-  ctx.strokeStyle="#ff8294";
-  ctx.lineWidth=3;
-  ctx.strokeRect(b.x-22,b.y-22,44,44);
- });
-
- drawTrajectory();
-
- ctx.beginPath();
- ctx.arc(origin.x,origin.y,15,0,Math.PI*2);
- ctx.fillStyle="#ffe45c";
- ctx.fill();
- ctx.strokeStyle="white";
- ctx.lineWidth=3;
- ctx.stroke();
-}
-
-function drawTrajectory(){
- const w=canvas.width,h=canvas.height;
- let x=origin.x,y=origin.y;
- const rad=Number(angle.value)*Math.PI/180;
- let dx=Math.cos(rad),dy=-Math.sin(rad);
- let hits=0;
- ctx.beginPath();
- ctx.moveTo(x,y);
-
- for(let i=0;i<5000;i++){
-  let nx=x+dx*2,ny=y+dy*2;
-  if(nx<0||nx>w){dx=-dx;hits++;}
-  if(ny<0||ny>h){dy=-dy;hits++;}
-  x+=dx*2;y+=dy*2;
-  for(const b of blocks){
-   if(Math.abs(x-b.x)<23&&Math.abs(y-b.y)<23){
-    dx=-dx;dy=-dy;hits++;break;
-   }
-  }
-  ctx.lineTo(x,y);
-  if(hits>Number(bounce.value))break;
- }
- ctx.strokeStyle=color.value;
- ctx.lineWidth=4;
- ctx.lineCap="round";
- ctx.shadowColor=color.value;
- ctx.shadowBlur=8;
- ctx.stroke();
- ctx.shadowBlur=0;
-}
-
-function update(){
- angleValue.textContent=Number(angle.value).toFixed(2)+"°";
- bounceValue.textContent=bounce.value+"回";
- draw();
-}
-
-photo.addEventListener("change",e=>{
- const file=e.target.files[0];
- if(!file)return;
- const reader=new FileReader();
- reader.onload=event=>{
-  const next=new Image();
-  next.onload=()=>{
-   image=next;
-   const scale=Math.min(900/image.width,600/image.height,1);
-   canvas.width=Math.round(image.width*scale);
-   canvas.height=Math.round(image.height*scale);
-   origin={x:canvas.width/2,y:canvas.height*.8};
-   blocks=[];
-   draw();
+function setMode(next){
+  mode=next;
+  document.getElementById("originMode").classList.toggle("selected",mode==="origin");
+  document.getElementById("angleMode").classList.toggle("selected",mode==="angle");
+  document.getElementById("blockMode").classList.toggle("selected",mode==="block");
+  const messages={
+    origin:"● 発射点モード：ステージをタップして発射点を設定",
+    angle:"● 角度モード：下のスライダー、または±ボタンで角度を調整",
+    block:"● ブロック配置モード：ステージをタップしてブロックを配置"
   };
-  next.onerror=()=>alert("画像を読み込めませんでした");
-  next.src=event.target.result;
- };
- reader.onerror=()=>alert("ファイルの読み込みに失敗しました");
- reader.readAsDataURL(file);
-});
+  message.textContent=messages[mode];
+  document.getElementById("coordNote").textContent=mode==="block"
+    ?"ブロックを置く位置をステージ上でタップしてください。"
+    :"ステージをタップ、またはX・Yの数値を入力して位置を調整できます。";
+}
+function syncCoords(){
+  posX.value=Math.round(origin.x);
+  posY.value=Math.round(origin.y);
+}
+function clampOrigin(){
+  origin.x=Math.max(0,Math.min(canvas.width,Number(origin.x)||0));
+  origin.y=Math.max(0,Math.min(canvas.height,Number(origin.y)||0));
+  syncCoords();draw();
+}
+function draw(){
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle="#111b2a";ctx.fillRect(0,0,w,h);
+  if(image){
+    ctx.drawImage(image,0,0,w,h);
+  }else{
+    ctx.fillStyle="#b8c5d7";ctx.font="bold 25px sans-serif";ctx.textAlign="center";
+    ctx.fillText("＋ 画像からスクショを読み込んでね",w/2,h/2);
+  }
 
+  if(wallLine){
+    ctx.save();ctx.strokeStyle="rgba(74,235,207,.72)";ctx.lineWidth=Math.max(2,w/450);
+    ctx.setLineDash([10,7]);ctx.strokeRect(2,2,w-4,h-4);ctx.restore();
+  }
+
+  blocks.forEach((b,i)=>{
+    const size=Math.max(18,Math.min(w,h)*.045);
+    ctx.fillStyle="rgba(18,30,48,.78)";
+    ctx.fillRect(b.x-size/2,b.y-size/2,size,size);
+    ctx.strokeStyle="#ff7e9a";ctx.lineWidth=Math.max(2,w/450);
+    ctx.strokeRect(b.x-size/2,b.y-size/2,size,size);
+    ctx.fillStyle="#fff";ctx.font=`bold ${Math.max(10,w/90)}px sans-serif`;
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(i+1),b.x,b.y);
+  });
+
+  drawTrajectory();
+  ctx.beginPath();ctx.arc(origin.x,origin.y,Math.max(9,w/55),0,Math.PI*2);
+  ctx.fillStyle="#ffe45c";ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();
+  ctx.beginPath();ctx.arc(origin.x,origin.y,Math.max(3,w/150),0,Math.PI*2);
+  ctx.fillStyle="#18243a";ctx.fill();
+}
+function drawTrajectory(){
+  const w=canvas.width,h=canvas.height;
+  let x=origin.x,y=origin.y;
+  const rad=Number(angle.value)*Math.PI/180;
+  let dx=Math.cos(rad),dy=-Math.sin(rad),hits=0;
+  ctx.beginPath();ctx.moveTo(x,y);
+  const step=Math.max(1.5,Math.min(w,h)/300);
+  for(let i=0;i<Math.max(w,h)*12;i++){
+    let nx=x+dx*step,ny=y+dy*step;
+    if(nx<0||nx>w){dx=-dx;hits++;}
+    if(ny<0||ny>h){dy=-dy;hits++;}
+    x+=dx*step;y+=dy*step;
+    for(const b of blocks){
+      const size=Math.max(18,Math.min(w,h)*.045);
+      if(Math.abs(x-b.x)<size/2+2&&Math.abs(y-b.y)<size/2+2){
+        dx=-dx;dy=-dy;hits++;break;
+      }
+    }
+    ctx.lineTo(x,y);
+    if(hits>Number(bounce.value))break;
+  }
+  ctx.save();ctx.strokeStyle=color.value;ctx.lineWidth=wideLine?Math.max(3,w/220):Math.max(1.5,w/500);
+  ctx.lineCap="round";ctx.lineJoin="round";ctx.shadowColor=color.value;ctx.shadowBlur=wideLine?9:3;
+  ctx.stroke();ctx.restore();
+}
+function update(){
+  angleValue.textContent=Number(angle.value).toFixed(2)+"°";
+  bounceValue.textContent=bounce.value+"回";
+  draw();
+}photo.addEventListener("change",e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=event=>{
+    const next=new Image();
+    next.onload=()=>{
+      image=next;
+      const scale=Math.min(1200/next.width,1800/next.height,1);
+      canvas.width=Math.max(1,Math.round(next.width*scale));
+      canvas.height=Math.max(1,Math.round(next.height*scale));
+      origin={x:canvas.width/2,y:canvas.height*.88};
+      blocks=[];syncCoords();update();
+      message.textContent="✓ "+file.name+" を読み込みました。発射点を調整してね。";
+    };
+    next.onerror=()=>alert("画像を読み込めませんでした。別の画像を選んでください。");
+    next.src=event.target.result;
+  };
+  reader.onerror=()=>alert("ファイルの読み込みに失敗しました。");
+  reader.readAsDataURL(file);
+});
+document.getElementById("originMode").onclick=()=>setMode("origin");
+document.getElementById("angleMode").onclick=()=>setMode("angle");
+document.getElementById("blockMode").onclick=()=>setMode("block");
+canvas.addEventListener("pointerdown",e=>{
+  const r=canvas.getBoundingClientRect();
+  const x=(e.clientX-r.left)*canvas.width/r.width;
+  const y=(e.clientY-r.top)*canvas.height/r.height;
+  if(mode==="block"){
+    blocks.push({x,y});
+  }else if(mode==="origin"){
+    origin={x,y};syncCoords();
+  }
+  draw();
+});
+[posX,posY].forEach((input,index)=>input.addEventListener("change",()=>{
+  if(index===0)origin.x=Number(input.value);else origin.y=Number(input.value);
+  clampOrigin();
+}));
 angle.addEventListener("input",update);
 bounce.addEventListener("input",update);
 color.addEventListener("input",draw);
-
 document.getElementById("minus").onclick=()=>{
- angle.value=Number(angle.value)-.35;
- if(Number(angle.value)<0)angle.value=359.8;
- update();
+  angle.value=(Number(angle.value)-.35+360)%360;update();
 };
 document.getElementById("plus").onclick=()=>{
- angle.value=Number(angle.value)+.35;
- if(Number(angle.value)>359.8)angle.value=0;
- update();
+  angle.value=(Number(angle.value)+.35)%360;update();
 };
-
-document.getElementById("originMode").onclick=()=>{
- blockMode=false;
- originMode=true;
- message.textContent="画面をタップして発射位置を決めてね";
+document.getElementById("widthButton").onclick=function(){
+  wideLine=!wideLine;this.classList.toggle("active",wideLine);this.textContent="幅 "+(wideLine?"ON":"OFF");draw();
 };
-
-document.getElementById("blockMode").onclick=function(){
- blockMode=!blockMode;
- originMode=false;
- this.textContent="ブロック配置 "+(blockMode?"ON":"OFF");
- message.textContent=blockMode?"画面をタップしてブロックを置いてね":"配置モード終了";
+document.getElementById("wallButton").onclick=function(){
+  wallLine=!wallLine;this.classList.toggle("active",wallLine);this.textContent="壁線 "+(wallLine?"ON":"OFF");draw();
 };
-
-canvas.addEventListener("pointerdown",e=>{
- const r=canvas.getBoundingClientRect();
- const x=(e.clientX-r.left)*canvas.width/r.width;
- const y=(e.clientY-r.top)*canvas.height/r.height;
- if(blockMode){
-  blocks.push({x,y});
- }else if(originMode){
-  origin={x,y};
- }
- draw();
-});
-
+document.getElementById("undoBlock").onclick=()=>{
+  blocks.pop();draw();
+  message.textContent=blocks.length?"最後のブロックを取り消しました。":"配置したブロックはありません。";
+};
 document.getElementById("clearBlocks").onclick=()=>{
- blocks=[];
- draw();
+  blocks=[];draw();message.textContent="配置したブロックをすべて消去しました。";
 };
-
+document.getElementById("saveLayout").onclick=()=>{
+  const data={width:canvas.width,height:canvas.height,origin,blocks,angle:Number(angle.value),bounce:Number(bounce.value),lineColor:color.value,wideLine,wallLine};
+  try{
+    localStorage.setItem("monstGuideLayout",JSON.stringify(data));
+    message.textContent="✓ 配置をこの端末のブラウザに保存しました。";
+  }catch(e){message.textContent="保存できませんでした。ブラウザの設定を確認してください。";}
+};
 document.getElementById("saveImage").onclick=()=>{
- const a=document.createElement("a");
- a.download="monst-guide.png";
- a.href=canvas.toDataURL("image/png");
- a.click();
+  const a=document.createElement("a");a.download="monst-guide.png";
+  a.href=canvas.toDataURL("image/png");a.click();
 };
-
-update();
+document.getElementById("fitButton").onclick=()=>{
+  fitLarge=!fitLarge;
+  canvas.style.maxHeight=fitLarge?"76svh":"62svh";
+  document.getElementById("fitButton").textContent=fitLarge?"標準表示":"全体表示";
+};
+update();syncCoords();
 </script>
 </body>
 </html>
