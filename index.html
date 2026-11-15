@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>モンスト軌道ガイド</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:15px;background:#11131c;color:white;font-family:-apple-system,sans-serif}
+h1{text-align:center;color:#d6b5ff;font-size:23px}
+.panel{background:#202536;padding:14px;border-radius:14px;margin:12px 0}
+button,.file-button{background:#8056c9;color:white;border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:bold}
+input[type=file]{display:none}
+input[type=range]{width:100%;accent-color:#bd91ff}
+input[type=color]{width:48px;height:38px}
+.row{display:flex;align-items:center;gap:10px;margin:12px 0}
+.row>*{flex:1}
+.value{color:#d5b7ff;text-align:right}
+#stage{width:100%;height:auto;display:block;border-radius:12px;background:#090b12;touch-action:manipulation}
+.small{font-size:12px;color:#b7bfd0;line-height:1.6}
+</style>
+</head>
+<body>
+<h1>🎯 モンスト軌道ガイド</h1>
+
+<div class="panel">
+<label class="file-button" for="photo">📷 スクショを読み込む</label>
+<input id="photo" type="file" accept="image/*">
+<p class="small">写真アプリからスクショを選択してね。</p>
+</div>
+
+<canvas id="stage" width="900" height="600"></canvas>
+
+<div class="panel">
+<div class="row">
+<span>角度</span>
+<span class="value" id="angleValue">45.00°</span>
+</div>
+<input id="angle" type="range" min="0" max="359.8" step="0.35" value="45">
+
+<div class="row">
+<button id="minus">− 0.35°</button>
+<button id="plus">＋ 0.35°</button>
+</div>
+
+<div class="row">
+<span>バウンド回数</span>
+<span class="value" id="bounceValue">3回</span>
+</div>
+<input id="bounce" type="range" min="0" max="20" value="3">
+
+<div class="row">
+<span>軌道線の色</span>
+<input id="lineColor" type="color" value="#00ffcc">
+</div>
+</div>
+
+<div class="panel">
+<div class="row">
+<button id="originMode">発射位置を変更</button>
+<button id="blockMode">ブロック配置 ON/OFF</button>
+</div>
+<p class="small" id="message">画面をタップして発射位置を設定できるよ。</p>
+<button id="clearBlocks">ブロックを全消去</button>
+<button id="saveImage">画像を保存</button>
+</div>
+
+<script>
+const canvas=document.getElementById("stage");
+const ctx=canvas.getContext("2d");
+const photo=document.getElementById("photo");
+const angle=document.getElementById("angle");
+const bounce=document.getElementById("bounce");
+const color=document.getElementById("lineColor");
+const angleValue=document.getElementById("angleValue");
+const bounceValue=document.getElementById("bounceValue");
+const message=document.getElementById("message");
+
+let image=null;
+let origin={x:180,y:300};
+let blocks=[];
+let blockMode=false;
+let originMode=true;
+function draw(){
+ const w=canvas.width,h=canvas.height;
+ ctx.clearRect(0,0,w,h);
+ ctx.fillStyle="#171c28";
+ ctx.fillRect(0,0,w,h);
+
+ if(image){
+  const scale=Math.min(w/image.width,h/image.height);
+  const iw=image.width*scale,ih=image.height*scale;
+  ctx.drawImage(image,(w-iw)/2,(h-ih)/2,iw,ih);
+ }else{
+  ctx.fillStyle="#aaa";
+  ctx.font="28px sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("スクショを読み込んでね",w/2,h/2);
+ }
+
+ blocks.forEach(b=>{
+  ctx.fillStyle="rgba(255,70,100,.55)";
+  ctx.fillRect(b.x-22,b.y-22,44,44);
+  ctx.strokeStyle="#ff8294";
+  ctx.lineWidth=3;
+  ctx.strokeRect(b.x-22,b.y-22,44,44);
+ });
+
+ drawTrajectory();
+
+ ctx.beginPath();
+ ctx.arc(origin.x,origin.y,15,0,Math.PI*2);
+ ctx.fillStyle="#ffe45c";
+ ctx.fill();
+ ctx.strokeStyle="white";
+ ctx.lineWidth=3;
+ ctx.stroke();
+}
+
+function drawTrajectory(){
+ const w=canvas.width,h=canvas.height;
+ let x=origin.x,y=origin.y;
+ const rad=Number(angle.value)*Math.PI/180;
+ let dx=Math.cos(rad),dy=-Math.sin(rad);
+ let hits=0;
+ ctx.beginPath();
+ ctx.moveTo(x,y);
+
+ for(let i=0;i<5000;i++){
+  let nx=x+dx*2,ny=y+dy*2;
+  if(nx<0||nx>w){dx=-dx;hits++;}
+  if(ny<0||ny>h){dy=-dy;hits++;}
+  x+=dx*2;y+=dy*2;
+  for(const b of blocks){
+   if(Math.abs(x-b.x)<23&&Math.abs(y-b.y)<23){
+    dx=-dx;dy=-dy;hits++;break;
+   }
+  }
+  ctx.lineTo(x,y);
+  if(hits>Number(bounce.value))break;
+ }
+ ctx.strokeStyle=color.value;
+ ctx.lineWidth=4;
+ ctx.lineCap="round";
+ ctx.shadowColor=color.value;
+ ctx.shadowBlur=8;
+ ctx.stroke();
+ ctx.shadowBlur=0;
+}
+
+function update(){
+ angleValue.textContent=Number(angle.value).toFixed(2)+"°";
+ bounceValue.textContent=bounce.value+"回";
+ draw();
+}
+
+photo.addEventListener("change",e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=event=>{
+  const next=new Image();
+  next.onload=()=>{
+   image=next;
+   const scale=Math.min(900/image.width,600/image.height,1);
+   canvas.width=Math.round(image.width*scale);
+   canvas.height=Math.round(image.height*scale);
+   origin={x:canvas.width/2,y:canvas.height*.8};
+   blocks=[];
+   draw();
+  };
+  next.onerror=()=>alert("画像を読み込めませんでした");
+  next.src=event.target.result;
+ };
+ reader.onerror=()=>alert("ファイルの読み込みに失敗しました");
+ reader.readAsDataURL(file);
+});
+
+angle.addEventListener("input",update);
+bounce.addEventListener("input",update);
+color.addEventListener("input",draw);
+
+document.getElementById("minus").onclick=()=>{
+ angle.value=Number(angle.value)-.35;
+ if(Number(angle.value)<0)angle.value=359.8;
+ update();
+};
+document.getElementById("plus").onclick=()=>{
+ angle.value=Number(angle.value)+.35;
+ if(Number(angle.value)>359.8)angle.value=0;
+ update();
+};
+
+document.getElementById("originMode").onclick=()=>{
+ blockMode=false;
+ originMode=true;
+ message.textContent="画面をタップして発射位置を決めてね";
+};
+
+document.getElementById("blockMode").onclick=function(){
+ blockMode=!blockMode;
+ originMode=false;
+ this.textContent="ブロック配置 "+(blockMode?"ON":"OFF");
+ message.textContent=blockMode?"画面をタップしてブロックを置いてね":"配置モード終了";
+};
+
+canvas.addEventListener("pointerdown",e=>{
+ const r=canvas.getBoundingClientRect();
+ const x=(e.clientX-r.left)*canvas.width/r.width;
+ const y=(e.clientY-r.top)*canvas.height/r.height;
+ if(blockMode){
+  blocks.push({x,y});
+ }else if(originMode){
+  origin={x,y};
+ }
+ draw();
+});
+
+document.getElementById("clearBlocks").onclick=()=>{
+ blocks=[];
+ draw();
+};
+
+document.getElementById("saveImage").onclick=()=>{
+ const a=document.createElement("a");
+ a.download="monst-guide.png";
+ a.href=canvas.toDataURL("image/png");
+ a.click();
+};
+
+update();
+</script>
+</body>
+</html>
+
